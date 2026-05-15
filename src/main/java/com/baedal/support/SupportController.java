@@ -9,9 +9,10 @@ public class SupportController {
 
     private final ChatClient chatClient;
 
-    public SupportController(ChatClient.Builder builder) {
+    public SupportController(ChatClient.Builder builder, PerformanceLoggingAdvisor advisor) {
         this.chatClient = builder
                 .defaultSystem(BaedalPrompt.SYSTEM_PROMPT)
+                .defaultAdvisors(advisor)
                 .build();
     }
 
