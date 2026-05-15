@@ -1,6 +1,5 @@
 package com.baedal.support;
 
-import lombok.RequiredArgsConstructor;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.web.bind.annotation.*;
 
@@ -10,25 +9,35 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
-@RequiredArgsConstructor
 @RequestMapping("/api/v1/prompt-lab")
 public class PromptLabController {
 
     private final ChatClient.Builder builder;
 
-    // TODO [2단계]: 프롬프트 정량 비교 실험 엔드포인트를 구현하라.
-    //
-    // 구현 힌트:
-    // 1. req.systemPrompt()를 System Prompt로 설정한 ChatClient를 빌드한다.
-    // 2. req.repeat() 횟수만큼 반복하여 .entity(SupportResponse.class)를 호출한다.
-    // 3. 결과 리스트를 PromptLabResult.from()에 넘겨 통계를 계산한다.
-    //
-    // 실험 후:
-    // - 단순 프롬프트 vs 구조화된 프롬프트로 각 5회 호출
-    // - categoryConsistency 수치를 비교하여 README에 기록
+    public PromptLabController(ChatClient.Builder builder) {
+        this.builder = builder;
+    }
+
     @PostMapping
     public PromptLabResult experiment(@RequestBody PromptLabRequest req) {
-        throw new UnsupportedOperationException("TODO: 구현하세요");
+        int runs = Math.max(0, req.repeat());
+        if (runs == 0) {
+            return PromptLabResult.from(List.of());
+        }
+
+        ChatClient chatClient = builder
+                .defaultSystem(req.systemPrompt())
+                .build();
+
+        List<SupportResponse> results = new ArrayList<>(runs);
+        for (int i = 0; i < runs; i++) {
+            SupportResponse r = chatClient.prompt()
+                    .user(req.message())
+                    .call()
+                    .entity(SupportResponse.class);
+            results.add(r);
+        }
+        return PromptLabResult.from(results);
     }
 
     public record PromptLabRequest(
