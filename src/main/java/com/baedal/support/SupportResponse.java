@@ -11,6 +11,14 @@ public record SupportResponse(
         Integer estimatedResolutionMinutes,
         Confidence confidenceLevel
 ) {
+    public SupportResponse {
+        if (estimatedResolutionMinutes != null && estimatedResolutionMinutes < 0) {
+            throw new IllegalArgumentException(
+                    "estimatedResolutionMinutes must be non-negative: " + estimatedResolutionMinutes);
+        }
+        neededInfo = neededInfo == null ? List.of() : List.copyOf(neededInfo);
+    }
+
     public enum Category {
         ORDER,
         DELIVERY,
