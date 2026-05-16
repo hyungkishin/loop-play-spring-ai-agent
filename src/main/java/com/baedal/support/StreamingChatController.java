@@ -1,5 +1,6 @@
 package com.baedal.support;
 
+import jakarta.validation.Valid;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
@@ -18,7 +19,7 @@ public class StreamingChatController {
     }
 
     @PostMapping(produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public Flux<String> chatStream(@RequestBody ChatRequest req) {
+    public Flux<String> chatStream(@Valid @RequestBody ChatRequest req) {
         return chatClient.prompt()
                 .user(req.message())
                 .stream()

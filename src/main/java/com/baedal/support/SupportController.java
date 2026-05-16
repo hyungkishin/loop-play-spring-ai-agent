@@ -1,5 +1,6 @@
 package com.baedal.support;
 
+import jakarta.validation.Valid;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,7 +18,7 @@ public class SupportController {
     }
 
     @PostMapping
-    public SupportResponse triage(@RequestBody ChatRequest req) {
+    public SupportResponse triage(@Valid @RequestBody ChatRequest req) {
         return chatClient.prompt()
                 .user(req.message())
                 .call()

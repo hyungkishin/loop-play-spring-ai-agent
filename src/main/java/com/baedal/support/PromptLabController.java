@@ -1,5 +1,8 @@
 package com.baedal.support;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.NotBlank;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,6 +15,8 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/v1/prompt-lab")
 public class PromptLabController {
 
+    static final int MAX_REPEAT = 20;
+
     private final ChatClient.Builder builder;
 
     public PromptLabController(ChatClient.Builder builder) {
@@ -19,7 +24,7 @@ public class PromptLabController {
     }
 
     @PostMapping
-    public PromptLabResult experiment(@RequestBody PromptLabRequest req) {
+    public PromptLabResult experiment(@Valid @RequestBody PromptLabRequest req) {
         int runs = Math.max(0, req.repeat());
         if (runs == 0) {
             return PromptLabResult.from(List.of());
@@ -41,9 +46,9 @@ public class PromptLabController {
     }
 
     public record PromptLabRequest(
-            String systemPrompt,
-            String message,
-            int repeat
+            @NotBlank String systemPrompt,
+            @NotBlank String message,
+            @Max(MAX_REPEAT) int repeat
     ) {}
 
     public record PromptLabResult(
