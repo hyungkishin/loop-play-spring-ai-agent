@@ -12,6 +12,7 @@ import org.springframework.ai.chat.metadata.Usage;
 import org.springframework.ai.chat.model.ChatResponse;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -80,5 +81,17 @@ class PerformanceLoggingAdvisorTest {
 
         assertThat(advisor.getName()).isEqualTo("PerformanceLoggingAdvisor");
         assertThat(advisor.getOrder()).isEqualTo(100);
+    }
+
+    @Test
+    void adviseCall_rethrowsOriginalException_whenChainThrows() {
+        RuntimeException boom = new IllegalStateException("LLM down");
+        when(chain.nextCall(request)).thenThrow(boom);
+
+        PerformanceLoggingAdvisor advisor = new PerformanceLoggingAdvisor();
+
+        assertThatThrownBy(() -> advisor.adviseCall(request, chain))
+                .isSameAs(boom);
+        verify(chain).nextCall(request);
     }
 }

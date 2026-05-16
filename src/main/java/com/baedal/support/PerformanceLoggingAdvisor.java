@@ -27,9 +27,21 @@ public class PerformanceLoggingAdvisor implements CallAdvisor {
     @Override
     public ChatClientResponse adviseCall(ChatClientRequest request, CallAdvisorChain chain) {
         long startNanos = System.nanoTime();
-        ChatClientResponse response = chain.nextCall(request);
-        long elapsedMs = (System.nanoTime() - startNanos) / 1_000_000;
+        try {
+            ChatClientResponse response = chain.nextCall(request);
+            logSuccess(elapsedMs(startNanos), response);
+            return response;
+        } catch (RuntimeException e) {
+            logFailure(elapsedMs(startNanos), e);
+            throw e;
+        }
+    }
 
+    private long elapsedMs(long startNanos) {
+        return (System.nanoTime() - startNanos) / 1_000_000;
+    }
+
+    private void logSuccess(long elapsedMs, ChatClientResponse response) {
         Integer promptTokens = null;
         Integer completionTokens = null;
         Integer totalTokens = null;
@@ -49,6 +61,10 @@ public class PerformanceLoggingAdvisor implements CallAdvisor {
 
         log.info("LLM call elapsedMs={} promptTokens={} completionTokens={} totalTokens={}",
                 elapsedMs, promptTokens, completionTokens, totalTokens);
-        return response;
+    }
+
+    private void logFailure(long elapsedMs, RuntimeException e) {
+        log.warn("LLM call failed elapsedMs={} type={} message={}",
+                elapsedMs, e.getClass().getSimpleName(), e.getMessage());
     }
 }
