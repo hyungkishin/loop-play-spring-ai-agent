@@ -89,4 +89,45 @@ class OrderToolsCancelTest {
         assertEquals(Outcome.NOT_FOUND, result.outcome());
         assertTrue(result.message().contains("찾을 수 없습니다"));
     }
+
+    @Test
+    @DisplayName("orderId가 null이면 NOT_FOUND로 떨어지고 예외를 던지지 않는다")
+    void cancel_nullOrderId_returnsNotFound() {
+        CancelOrderResult result = tools.cancelOrder(null, "취소");
+
+        assertEquals(Outcome.NOT_FOUND, result.outcome());
+    }
+
+    @Test
+    @DisplayName("orderId가 빈 문자열이어도 NOT_FOUND로 떨어진다")
+    void cancel_blankOrderId_returnsNotFound() {
+        CancelOrderResult result = tools.cancelOrder("   ", "취소");
+
+        assertEquals(Outcome.NOT_FOUND, result.outcome());
+    }
+
+    @Test
+    @DisplayName("reason이 null이면 '고객 요청'으로 정규화되어 저장된다")
+    void cancel_nullReason_normalizedToDefault() {
+        CancelOrderResult result = tools.cancelOrder("2024-1235", null);
+
+        assertEquals(Outcome.CANCELED, result.outcome());
+
+        CancelOrderResult second = tools.cancelOrder("2024-1235", "다시 확인");
+        assertEquals(Outcome.ALREADY_CANCELED, second.outcome());
+        assertTrue(second.message().contains("고객 요청"),
+                "null reason은 '고객 요청'으로 정규화되어 ALREADY_CANCELED 메시지에 인용된다");
+    }
+
+    @Test
+    @DisplayName("reason이 빈 문자열이어도 '고객 요청'으로 정규화된다")
+    void cancel_blankReason_normalizedToDefault() {
+        CancelOrderResult result = tools.cancelOrder("2024-1239", "   ");
+
+        assertEquals(Outcome.CANCELED, result.outcome());
+
+        CancelOrderResult second = tools.cancelOrder("2024-1239", "확인");
+        assertEquals(Outcome.ALREADY_CANCELED, second.outcome());
+        assertTrue(second.message().contains("고객 요청"));
+    }
 }

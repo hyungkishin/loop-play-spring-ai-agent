@@ -43,9 +43,7 @@ curl -X POST http://localhost:8080/api/v1/assistant \
 ./gradlew test --rerun-tasks
 ```
 
-JUnit XML 결과는 `build/test-results/test/*.xml` 에 떨어집니다.
-2주차 종료 시점에 35 케이스가 같은 batch 에서 `failures="0" errors="0"` 으로 통과해요.
-1주차 26 케이스 + 2주차 9 케이스 (`OrderToolsCancelTest` 7 + `OrderToolsIdempotencyObservationTest` 2).
+JUnit XML 결과는 `build/test-results/test/*.xml` 에 떨어집니다. 최신 케이스 수와 통과 여부는 그 XML 또는 CI 결과 아티팩트에서 확인합니다.
 `*ValidationTest` 클래스는 컨트롤러 경계의 Bean Validation 이 LLM 호출까지 흘러가기 전에 400 으로 차단되는지 보장하는 자리입니다.
 
 ## 1주차 회고 인덱스 — System Prompt / Structured Output / 정량 비교 / 스트리밍 / Advisor

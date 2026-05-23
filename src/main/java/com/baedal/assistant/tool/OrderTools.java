@@ -33,7 +33,7 @@ public class OrderTools {
             """)
     public OrderDetailView getOrderDetail(
             @ToolParam(description = "조회할 주문번호. 예: 2024-1234") String orderId) {
-        log.info("[Tool] getOrderDetail(orderId={})", orderId);
+        log.info("[Tool] getOrderDetail(orderId={})", maskOrderId(orderId));
         return orderService.findById(orderId).map(this::toDetailView).orElse(null);
     }
 
@@ -47,7 +47,7 @@ public class OrderTools {
             """)
     public DeliveryStatusView getDeliveryStatus(
             @ToolParam(description = "배달 상태를 조회할 주문번호. 예: 2024-1234") String orderId) {
-        log.info("[Tool] getDeliveryStatus(orderId={})", orderId);
+        log.info("[Tool] getDeliveryStatus(orderId={})", maskOrderId(orderId));
         return orderService.findById(orderId).map(this::toDeliveryView).orElse(null);
     }
 
@@ -64,7 +64,8 @@ public class OrderTools {
             @ToolParam(description = "취소할 주문번호. 예: 2024-1239") String orderId,
             @ToolParam(description = "고객이 말한 취소 사유. 예: '집 앞에 사람이 없어요'") String reason) {
         String normalizedReason = (reason == null || reason.isBlank()) ? "고객 요청" : reason.trim();
-        log.info("[Tool] cancelOrder(orderId={}, reasonLength={})", orderId, normalizedReason.length());
+        log.info("[Tool] cancelOrder(orderId={}, reasonLength={})",
+                maskOrderId(orderId), normalizedReason.length());
 
         Order order = orderService.findById(orderId).orElse(null);
         if (order == null) {
@@ -101,6 +102,7 @@ public class OrderTools {
         );
     }
 
+
     private DeliveryStatusView toDeliveryView(Order order) {
         String rider = order.status() == OrderStatus.DELIVERING ? order.riderLocation() : null;
         return new DeliveryStatusView(
@@ -109,5 +111,15 @@ public class OrderTools {
                 rider,
                 order.estimatedDeliveryAt()
         );
+    }
+
+    static String maskOrderId(String orderId) {
+        if (orderId == null || orderId.isBlank()) {
+            return "null";
+        }
+        if (orderId.length() <= 4) {
+            return "***";
+        }
+        return orderId.substring(0, 4) + "-***";
     }
 }

@@ -38,6 +38,18 @@ public class Order {
     }
 
     public void cancel(String reason, LocalDateTime at) {
+        if (reason == null || reason.isBlank()) {
+            throw new IllegalArgumentException("reason must not be blank");
+        }
+        if (at == null) {
+            throw new IllegalArgumentException("at must not be null");
+        }
+        if (this.status == OrderStatus.CANCELED) {
+            return;
+        }
+        if (!isCancelable()) {
+            throw new IllegalStateException("Order is not cancelable: " + this.status);
+        }
         this.status = OrderStatus.CANCELED;
         this.canceledReason = reason;
         this.canceledAt = at;
