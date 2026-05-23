@@ -1,0 +1,7 @@
+    [1st] outcome=CANCELED message=주문이 취소되었습니다. 결제 취소는 카드사에 따라 최대 7영업일이 소요될 수 있습니다.
+    [between] status=CANCELED canceledReason=집 앞에 사람이 없어요
+    [2nd] outcome=CANCELED message=주문이 취소되었습니다. 결제 취소는 카드사에 따라 최대 7영업일이 소요될 수 있습니다.
+    [after] status=CANCELED canceledReason=한 번 더 확인 부탁드려요
+    [before] status=CANCELED canceledReason=주소가 잘못 입력되었어요
+    [cancel re-request] outcome=CANCELED message=주문이 취소되었습니다. 결제 취소는 카드사에 따라 최대 7영업일이 소요될 수 있습니다.
+    [after]  status=CANCELED canceledReason=한 번 더 취소
