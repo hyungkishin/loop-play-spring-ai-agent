@@ -108,6 +108,9 @@ public class OrderMockService {
     }
 
     public Optional<Order> findById(String orderId) {
+        if (orderId == null || orderId.isBlank()) {
+            return Optional.empty();
+        }
         return Optional.ofNullable(orders.get(orderId));
     }
 }

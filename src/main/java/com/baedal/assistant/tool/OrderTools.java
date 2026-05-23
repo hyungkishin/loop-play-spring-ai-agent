@@ -63,7 +63,8 @@ public class OrderTools {
     public CancelOrderResult cancelOrder(
             @ToolParam(description = "취소할 주문번호. 예: 2024-1239") String orderId,
             @ToolParam(description = "고객이 말한 취소 사유. 예: '집 앞에 사람이 없어요'") String reason) {
-        log.info("[Tool] cancelOrder(orderId={}, reason={})", orderId, reason);
+        String normalizedReason = (reason == null || reason.isBlank()) ? "고객 요청" : reason.trim();
+        log.info("[Tool] cancelOrder(orderId={}, reasonLength={})", orderId, normalizedReason.length());
 
         Order order = orderService.findById(orderId).orElse(null);
         if (order == null) {
@@ -81,7 +82,7 @@ public class OrderTools {
                     "조리가 이미 시작되어(" + order.status() + ") 자동 취소가 불가합니다. 상담원 연결이 필요합니다.");
         }
 
-        order.cancel(reason, LocalDateTime.now());
+        order.cancel(normalizedReason, LocalDateTime.now());
         return new CancelOrderResult(orderId, Outcome.CANCELED,
                 "주문이 취소되었습니다. 결제 취소는 카드사에 따라 최대 7영업일이 소요될 수 있습니다.");
     }
