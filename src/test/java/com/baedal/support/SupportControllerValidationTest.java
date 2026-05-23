@@ -1,5 +1,6 @@
 package com.baedal.support;
 
+import com.baedal.assistant.tool.OrderTools;
 import org.junit.jupiter.api.Test;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.api.Advisor;
@@ -34,6 +35,7 @@ class SupportControllerValidationTest {
             ChatClient.Builder b = mock(ChatClient.Builder.class);
             when(b.defaultSystem(anyString())).thenReturn(b);
             when(b.defaultAdvisors(any(Advisor[].class))).thenReturn(b);
+            when(b.defaultTools(any(Object[].class))).thenReturn(b);
             when(b.build()).thenReturn(chatClient);
             return b;
         }
@@ -42,6 +44,7 @@ class SupportControllerValidationTest {
     @Autowired MockMvc mvc;
     @Autowired ChatClient chatClient;
     @MockitoBean PerformanceLoggingAdvisor advisor;
+    @MockitoBean OrderTools orderTools;
 
     @Test
     void triage_blankMessage_returns400_andDoesNotCallChatClient() throws Exception {
