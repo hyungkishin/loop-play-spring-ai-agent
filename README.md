@@ -90,7 +90,6 @@ curl 기반 실측과 JDBC 저장소 비교는 이어서 기록합니다.
 - [02.Memory크기실험.md](docs/3주차/02.Memory크기실험.md) — `MAX_MESSAGES` 2 / 20 / 무제한 비교 계획
 - [03.InMemory와JDBC저장소비교.md](docs/3주차/03.InMemory와JDBC저장소비교.md) — 저장소 선택 기준과 재시작 실험 계획
 - [04.Observability와AI코드리뷰.md](docs/3주차/04.Observability와AI코드리뷰.md) — Memory 프롬프트 삽입 관찰과 AI 코드 리뷰 계획
-- [05.생각정리.md](docs/3주차/05.생각정리.md) — 단계 실측 후 정리할 질문 목록
 
 ## 실측 환경
 
