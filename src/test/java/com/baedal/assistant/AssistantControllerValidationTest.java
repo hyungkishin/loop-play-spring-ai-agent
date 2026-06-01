@@ -5,6 +5,7 @@ import com.baedal.support.BaedalSupportApplication;
 import com.baedal.support.PerformanceLoggingAdvisor;
 import org.junit.jupiter.api.Test;
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
 import org.springframework.ai.chat.client.advisor.api.Advisor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -47,6 +48,7 @@ class AssistantControllerValidationTest {
 
     @Autowired MockMvc mvc;
     @Autowired ChatClient chatClient;
+    @MockitoBean MessageChatMemoryAdvisor memoryAdvisor;
     @MockitoBean PerformanceLoggingAdvisor advisor;
     @MockitoBean OrderTools orderTools;
 
