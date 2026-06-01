@@ -86,6 +86,11 @@ JUnit XML 결과는 `build/test-results/test/*.xml` 에 떨어집니다. 최신 
 curl 기반 실측과 JDBC 저장소 비교는 이어서 기록합니다.
 
 - [00.구현방향.md](docs/3주차/00.구현방향.md) — PDF 요구사항을 현재 코드 구조에 맞춰 나눈 구현/실측 계획
+- [01.ChatMemory3레이어와세션분리.md](docs/3주차/01.ChatMemory3레이어와세션분리.md) — InMemory + MessageWindow + Advisor 연결과 첫 smoke
+- [02.Memory크기실험.md](docs/3주차/02.Memory크기실험.md) — `MAX_MESSAGES` 2 / 20 / 무제한 비교 계획
+- [03.InMemory와JDBC저장소비교.md](docs/3주차/03.InMemory와JDBC저장소비교.md) — 저장소 선택 기준과 재시작 실험 계획
+- [04.Observability와AI코드리뷰.md](docs/3주차/04.Observability와AI코드리뷰.md) — Memory 프롬프트 삽입 관찰과 AI 코드 리뷰 계획
+- [05.생각정리.md](docs/3주차/05.생각정리.md) — 단계 실측 후 정리할 질문 목록
 
 ## 실측 환경
 
