@@ -39,3 +39,7 @@ out/
 
 ### oh-my-claudecode ###
 .omc/
+
+### AI agent tooling (local) ###
+.codex/
+.claude/
