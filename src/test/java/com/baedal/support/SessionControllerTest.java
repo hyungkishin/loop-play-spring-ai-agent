@@ -12,7 +12,7 @@ class SessionControllerTest {
 
     private final ChatMemoryConfig config = new ChatMemoryConfig();
     private final ChatMemoryRepository repository = config.chatMemoryRepository();
-    private final ChatMemory memory = config.chatMemory(repository);
+    private final ChatMemory memory = config.chatMemory(repository, ChatMemoryConfig.DEFAULT_MAX_MESSAGES);
     private final SessionController controller = new SessionController(memory, repository);
 
     @Test
