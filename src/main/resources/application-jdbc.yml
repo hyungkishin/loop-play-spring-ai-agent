@@ -12,4 +12,5 @@ spring:
       memory:
         repository:
           jdbc:
-            initialize-schema: embedded
+            initialize-schema: always
+            platform: postgresql
