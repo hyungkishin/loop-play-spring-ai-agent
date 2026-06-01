@@ -26,8 +26,7 @@ public class SupportController {
 
     @PostMapping
     public SupportResponse triage(@Valid @RequestBody ChatRequest req,
-                                  @RequestHeader(value = "X-Session-Id", defaultValue = ChatMemory.DEFAULT_CONVERSATION_ID)
-                                  String sessionId) {
+                                  @RequestHeader("X-Session-Id") String sessionId) {
         return chatClient.prompt()
                 .user(req.message())
                 .advisors(a -> a.param(ChatMemory.CONVERSATION_ID, sessionId))

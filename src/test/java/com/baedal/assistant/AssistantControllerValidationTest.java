@@ -69,4 +69,13 @@ class AssistantControllerValidationTest {
                 .andExpect(status().isBadRequest());
         verify(chatClient, never()).prompt();
     }
+
+    @Test
+    void ask_missingSessionId_returns400_andDoesNotCallChatClient() throws Exception {
+        mvc.perform(post("/api/v1/assistant")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"message\":\"2024-1234 어디쯤이에요?\"}"))
+                .andExpect(status().isBadRequest());
+        verify(chatClient, never()).prompt();
+    }
 }

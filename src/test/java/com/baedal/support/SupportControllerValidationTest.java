@@ -65,4 +65,13 @@ class SupportControllerValidationTest {
                 .andExpect(status().isBadRequest());
         verify(chatClient, never()).prompt();
     }
+
+    @Test
+    void triage_missingSessionId_returns400_andDoesNotCallChatClient() throws Exception {
+        mvc.perform(post("/api/v1/support")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"message\":\"주문 취소하고 싶어요\"}"))
+                .andExpect(status().isBadRequest());
+        verify(chatClient, never()).prompt();
+    }
 }
