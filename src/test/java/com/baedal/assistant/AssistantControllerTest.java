@@ -10,6 +10,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
 import org.springframework.ai.chat.client.advisor.api.Advisor;
+import org.springframework.ai.chat.client.advisor.vectorstore.QuestionAnswerAdvisor;
 
 import java.util.function.Consumer;
 
@@ -26,6 +27,7 @@ class AssistantControllerTest {
     @Mock ChatClient.ChatClientRequestSpec requestSpec;
     @Mock ChatClient.CallResponseSpec callSpec;
     @Mock MessageChatMemoryAdvisor memoryAdvisor;
+    @Mock QuestionAnswerAdvisor ragAdvisor;
     @Mock PerformanceLoggingAdvisor advisor;
     @Mock OrderTools orderTools;
 
@@ -45,12 +47,12 @@ class AssistantControllerTest {
         wireChain();
         when(callSpec.content()).thenReturn("역삼역 사거리 부근입니다.");
 
-        AssistantController controller = new AssistantController(builder, memoryAdvisor, advisor, orderTools);
+        AssistantController controller = new AssistantController(builder, memoryAdvisor, ragAdvisor, advisor, orderTools);
         String result = controller.ask(new ChatRequest("주문번호 2024-1234 어디예요?"), "cust-A");
 
         assertThat(result).isEqualTo("역삼역 사거리 부근입니다.");
         verify(builder).defaultSystem(AssistantPrompt.SYSTEM_PROMPT);
-        verify(builder).defaultAdvisors(memoryAdvisor, advisor);
+        verify(builder).defaultAdvisors(memoryAdvisor, ragAdvisor, advisor);
         verify(builder).defaultTools(orderTools);
         verify(requestSpec).user("주문번호 2024-1234 어디예요?");
         verify(requestSpec).advisors(any(Consumer.class));
@@ -63,13 +65,13 @@ class AssistantControllerTest {
         wireChain();
         when(callSpec.content()).thenReturn("ok");
 
-        AssistantController controller = new AssistantController(builder, memoryAdvisor, advisor, orderTools);
+        AssistantController controller = new AssistantController(builder, memoryAdvisor, ragAdvisor, advisor, orderTools);
         controller.ask(new ChatRequest("문의1"), "cust-A");
         controller.ask(new ChatRequest("문의2"), "cust-A");
 
         verify(builder, times(1)).build();
         verify(builder, times(1)).defaultTools(orderTools);
-        verify(builder, times(1)).defaultAdvisors(memoryAdvisor, advisor);
+        verify(builder, times(1)).defaultAdvisors(memoryAdvisor, ragAdvisor, advisor);
         verify(builder, times(1)).defaultSystem(AssistantPrompt.SYSTEM_PROMPT);
     }
 }
