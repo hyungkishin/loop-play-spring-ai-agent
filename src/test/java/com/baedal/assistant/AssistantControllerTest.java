@@ -101,4 +101,18 @@ class AssistantControllerTest {
         assertThat(result).contains("1600-0987");
         verify(chatClient, never()).prompt();
     }
+
+    @Test
+    void ask_whenChainThrows_returnsSafeFallbackWithoutStackTrace() {
+        // Round 5 4단계: LLM/Tool 실패가 예외로 올라오면 fallback이 받아 안전 응답을 돌려준다.
+        wireChain();
+        when(callSpec.content()).thenThrow(new RuntimeException("simulated LLM failure: connection refused at line 42"));
+
+        AssistantController controller = new AssistantController(builder, inputGuardrail, memoryAdvisor, ragAdvisor, outputGuardrail, advisor, handoffDetector, orderTools);
+        String result = controller.ask(new ChatRequest("주문번호 2024-1234 상태 알려줘"), "cust-A");
+
+        assertThat(result).contains("1600-0987");
+        assertThat(result).doesNotContain("simulated LLM failure");
+        assertThat(result).doesNotContain("line 42");
+    }
 }

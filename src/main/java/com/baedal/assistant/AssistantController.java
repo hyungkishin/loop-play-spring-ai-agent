@@ -50,16 +50,30 @@ public class AssistantController {
     @PostMapping
     public String ask(@Valid @RequestBody ChatRequest req,
                       @RequestHeader("X-Session-Id") String sessionId) {
-        // LLM 호출 전에 상담원 전환을 먼저 본다. 전환이면 모델을 부르지 않고 연결 안내를 바로 돌려준다.
-        HandoffResult handoff = handoffDetector.detect(req.message());
-        if (handoff.handoff()) {
-            log.info("[Handoff] trigger={} — LLM 호출 없음", handoff.trigger());
-            return handoff.message();
+        try {
+            // LLM 호출 전에 상담원 전환을 먼저 본다. 전환이면 모델을 부르지 않고 연결 안내를 바로 돌려준다.
+            HandoffResult handoff = handoffDetector.detect(req.message());
+            if (handoff.handoff()) {
+                log.info("[Handoff] trigger={} — LLM 호출 없음", handoff.trigger());
+                return handoff.message();
+            }
+            return chatClient.prompt()
+                    .user(req.message())
+                    .advisors(a -> a.param(ChatMemory.CONVERSATION_ID, sessionId))
+                    .call()
+                    .content();
+        } catch (Exception e) {
+            return fallback(e);
         }
-        return chatClient.prompt()
-                .user(req.message())
-                .advisors(a -> a.param(ChatMemory.CONVERSATION_ID, sessionId))
-                .call()
-                .content();
+    }
+
+    /**
+     * Tool/LLM 실패 시 안전 응답. 스택 트레이스는 절대 응답에 노출하지 않고 내부 로그(log.error)에만 남기며,
+     * 고객에게는 일반화된 안내 + 상담원 연결 번호만 돌려준다.
+     */
+    private String fallback(Exception e) {
+        log.error("[Fallback] assistant 처리 실패 — 내부 오류 (응답에는 미노출)", e);
+        return "죄송합니다. 일시적인 오류로 요청을 처리하지 못했습니다. "
+                + "잠시 후 다시 시도하시거나 고객센터 1600-0987로 문의해 주세요.";
     }
 }
