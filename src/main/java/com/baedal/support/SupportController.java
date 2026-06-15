@@ -2,6 +2,7 @@ package com.baedal.support;
 
 import com.baedal.assistant.tool.OrderTools;
 import com.baedal.support.guardrail.InputGuardrailAdvisor;
+import com.baedal.support.guardrail.OutputGuardrailAdvisor;
 import jakarta.validation.Valid;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
@@ -19,12 +20,13 @@ public class SupportController {
                              InputGuardrailAdvisor inputGuardrail,
                              MessageChatMemoryAdvisor memoryAdvisor,
                              QuestionAnswerAdvisor ragAdvisor,
+                             OutputGuardrailAdvisor outputGuardrail,
                              PerformanceLoggingAdvisor performanceAdvisor,
                              OrderTools orderTools) {
         this.chatClient = builder
                 .defaultSystem(BaedalPrompt.SYSTEM_PROMPT)
-                // Round 5: inputGuardrail(5) → memory(10) → rag(20) → performance(100).
-                .defaultAdvisors(inputGuardrail, memoryAdvisor, ragAdvisor, performanceAdvisor)
+                // Round 5: inputGuardrail(5) → memory(10) → rag(20) → outputGuardrail(50) → performance(100).
+                .defaultAdvisors(inputGuardrail, memoryAdvisor, ragAdvisor, outputGuardrail, performanceAdvisor)
                 .defaultTools(orderTools)
                 .build();
     }

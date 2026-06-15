@@ -4,6 +4,7 @@ import com.baedal.assistant.tool.OrderTools;
 import com.baedal.support.ChatRequest;
 import com.baedal.support.PerformanceLoggingAdvisor;
 import com.baedal.support.guardrail.InputGuardrailAdvisor;
+import com.baedal.support.guardrail.OutputGuardrailAdvisor;
 import jakarta.validation.Valid;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
@@ -25,14 +26,16 @@ public class AssistantController {
                                InputGuardrailAdvisor inputGuardrail,
                                MessageChatMemoryAdvisor memoryAdvisor,
                                QuestionAnswerAdvisor ragAdvisor,
+                               OutputGuardrailAdvisor outputGuardrail,
                                PerformanceLoggingAdvisor performanceAdvisor,
                                OrderTools orderTools) {
         this.chatClient = builder
                 .defaultSystem(AssistantPrompt.SYSTEM_PROMPT)
-                // Round 5: inputGuardrail(5) → memory(10) → rag(20) → performance(100).
-                // 입력 Guardrail을 가장 바깥(5)에 두어 차단 발화가 Memory(10)에 저장되기 전에 잘라낸다.
-                // (OutputGuardrail(50)은 2단계에서 memory·rag 뒤, performance 앞에 끼운다.)
-                .defaultAdvisors(inputGuardrail, memoryAdvisor, ragAdvisor, performanceAdvisor)
+                // Round 5: inputGuardrail(5) → memory(10) → rag(20) → outputGuardrail(50) → performance(100).
+                // 입력 Guardrail은 가장 바깥(5)에서 차단 발화가 Memory에 저장되기 전에 잘라내고,
+                // 출력 Guardrail(50)은 모델 응답을 받은 뒤 마스킹하되 performance(100)보다는 바깥에 둬
+                // performance가 마스킹 전 날 응답의 토큰을 재게 한다.
+                .defaultAdvisors(inputGuardrail, memoryAdvisor, ragAdvisor, outputGuardrail, performanceAdvisor)
                 .defaultTools(orderTools)
                 .build();
     }
