@@ -1,6 +1,7 @@
 package com.baedal.support;
 
 import com.baedal.assistant.tool.OrderTools;
+import com.baedal.support.guardrail.InputGuardrailAdvisor;
 import jakarta.validation.Valid;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
@@ -15,14 +16,15 @@ public class SupportController {
     private final ChatClient chatClient;
 
     public SupportController(ChatClient.Builder builder,
+                             InputGuardrailAdvisor inputGuardrail,
                              MessageChatMemoryAdvisor memoryAdvisor,
                              QuestionAnswerAdvisor ragAdvisor,
                              PerformanceLoggingAdvisor performanceAdvisor,
                              OrderTools orderTools) {
         this.chatClient = builder
                 .defaultSystem(BaedalPrompt.SYSTEM_PROMPT)
-                // Round 4: memory(10) → rag(20) → performance(100) 순서로 체인 등록.
-                .defaultAdvisors(memoryAdvisor, ragAdvisor, performanceAdvisor)
+                // Round 5: inputGuardrail(5) → memory(10) → rag(20) → performance(100).
+                .defaultAdvisors(inputGuardrail, memoryAdvisor, ragAdvisor, performanceAdvisor)
                 .defaultTools(orderTools)
                 .build();
     }

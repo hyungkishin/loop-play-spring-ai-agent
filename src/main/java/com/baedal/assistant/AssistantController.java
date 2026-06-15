@@ -3,6 +3,7 @@ package com.baedal.assistant;
 import com.baedal.assistant.tool.OrderTools;
 import com.baedal.support.ChatRequest;
 import com.baedal.support.PerformanceLoggingAdvisor;
+import com.baedal.support.guardrail.InputGuardrailAdvisor;
 import jakarta.validation.Valid;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
@@ -21,15 +22,17 @@ public class AssistantController {
     private final ChatClient chatClient;
 
     public AssistantController(ChatClient.Builder builder,
+                               InputGuardrailAdvisor inputGuardrail,
                                MessageChatMemoryAdvisor memoryAdvisor,
                                QuestionAnswerAdvisor ragAdvisor,
                                PerformanceLoggingAdvisor performanceAdvisor,
                                OrderTools orderTools) {
         this.chatClient = builder
                 .defaultSystem(AssistantPrompt.SYSTEM_PROMPT)
-                // Round 4: memory(10) → rag(20) → performance(100) 순서로 체인 등록.
-                // Memory가 "아까 그 주문"을 먼저 복원해야 RAG가 그 주문의 정책을 검색할 수 있다.
-                .defaultAdvisors(memoryAdvisor, ragAdvisor, performanceAdvisor)
+                // Round 5: inputGuardrail(5) → memory(10) → rag(20) → performance(100).
+                // 입력 Guardrail을 가장 바깥(5)에 두어 차단 발화가 Memory(10)에 저장되기 전에 잘라낸다.
+                // (OutputGuardrail(50)은 2단계에서 memory·rag 뒤, performance 앞에 끼운다.)
+                .defaultAdvisors(inputGuardrail, memoryAdvisor, ragAdvisor, performanceAdvisor)
                 .defaultTools(orderTools)
                 .build();
     }

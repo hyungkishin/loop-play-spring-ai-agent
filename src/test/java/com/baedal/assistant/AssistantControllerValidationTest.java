@@ -49,6 +49,7 @@ class AssistantControllerValidationTest {
 
     @Autowired MockMvc mvc;
     @Autowired ChatClient chatClient;
+    @MockitoBean com.baedal.support.guardrail.InputGuardrailAdvisor inputGuardrail;
     @MockitoBean MessageChatMemoryAdvisor memoryAdvisor;
     @MockitoBean QuestionAnswerAdvisor ragAdvisor;
     @MockitoBean PerformanceLoggingAdvisor advisor;

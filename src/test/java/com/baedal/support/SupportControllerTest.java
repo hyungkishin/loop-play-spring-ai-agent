@@ -1,6 +1,7 @@
 package com.baedal.support;
 
 import com.baedal.assistant.tool.OrderTools;
+import com.baedal.support.guardrail.InputGuardrailAdvisor;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -25,6 +26,7 @@ class SupportControllerTest {
     @Mock ChatClient chatClient;
     @Mock ChatClient.ChatClientRequestSpec requestSpec;
     @Mock ChatClient.CallResponseSpec callSpec;
+    @Mock InputGuardrailAdvisor inputGuardrail;
     @Mock MessageChatMemoryAdvisor memoryAdvisor;
     @Mock QuestionAnswerAdvisor ragAdvisor;
     @Mock PerformanceLoggingAdvisor advisor;
@@ -55,14 +57,14 @@ class SupportControllerTest {
         wireChain();
         when(callSpec.entity(SupportResponse.class)).thenReturn(stub);
 
-        SupportController controller = new SupportController(builder, memoryAdvisor, ragAdvisor, advisor, orderTools);
+        SupportController controller = new SupportController(builder, inputGuardrail, memoryAdvisor, ragAdvisor, advisor, orderTools);
         SupportResponse result = controller.triage(new ChatRequest("주문 취소하고 싶어요"), "cust-A");
 
         assertThat(result.category()).isEqualTo(SupportResponse.Category.ORDER);
         assertThat(result.summary()).isEqualTo("주문 취소 요청");
         assertThat(result.confidenceLevel()).isEqualTo(SupportResponse.Confidence.HIGH);
         verify(builder).defaultSystem(BaedalPrompt.SYSTEM_PROMPT);
-        verify(builder).defaultAdvisors(memoryAdvisor, ragAdvisor, advisor);
+        verify(builder).defaultAdvisors(inputGuardrail, memoryAdvisor, ragAdvisor, advisor);
         verify(builder).defaultTools(orderTools);
         verify(requestSpec).user("주문 취소하고 싶어요");
         verify(requestSpec).advisors(any(Consumer.class));
@@ -76,12 +78,12 @@ class SupportControllerTest {
                         "n", List.of(), null, SupportResponse.Confidence.LOW)
         );
 
-        SupportController controller = new SupportController(builder, memoryAdvisor, ragAdvisor, advisor, orderTools);
+        SupportController controller = new SupportController(builder, inputGuardrail, memoryAdvisor, ragAdvisor, advisor, orderTools);
         controller.triage(new ChatRequest("문의1"), "cust-A");
         controller.triage(new ChatRequest("문의2"), "cust-A");
 
         verify(builder, times(1)).build();
-        verify(builder, times(1)).defaultAdvisors(memoryAdvisor, ragAdvisor, advisor);
+        verify(builder, times(1)).defaultAdvisors(inputGuardrail, memoryAdvisor, ragAdvisor, advisor);
         verify(builder, times(1)).defaultTools(orderTools);
     }
 }
