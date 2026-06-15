@@ -3,9 +3,12 @@ package com.baedal.assistant;
 import com.baedal.assistant.tool.OrderTools;
 import com.baedal.support.ChatRequest;
 import com.baedal.support.PerformanceLoggingAdvisor;
+import com.baedal.support.guardrail.HandoffDetector;
+import com.baedal.support.guardrail.HandoffDetector.HandoffResult;
 import com.baedal.support.guardrail.InputGuardrailAdvisor;
 import com.baedal.support.guardrail.OutputGuardrailAdvisor;
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
 import org.springframework.ai.chat.client.advisor.vectorstore.QuestionAnswerAdvisor;
@@ -16,11 +19,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/v1/assistant")
 public class AssistantController {
 
     private final ChatClient chatClient;
+    private final HandoffDetector handoffDetector;
 
     public AssistantController(ChatClient.Builder builder,
                                InputGuardrailAdvisor inputGuardrail,
@@ -28,7 +33,9 @@ public class AssistantController {
                                QuestionAnswerAdvisor ragAdvisor,
                                OutputGuardrailAdvisor outputGuardrail,
                                PerformanceLoggingAdvisor performanceAdvisor,
+                               HandoffDetector handoffDetector,
                                OrderTools orderTools) {
+        this.handoffDetector = handoffDetector;
         this.chatClient = builder
                 .defaultSystem(AssistantPrompt.SYSTEM_PROMPT)
                 // Round 5: inputGuardrail(5) → memory(10) → rag(20) → outputGuardrail(50) → performance(100).
@@ -43,6 +50,12 @@ public class AssistantController {
     @PostMapping
     public String ask(@Valid @RequestBody ChatRequest req,
                       @RequestHeader("X-Session-Id") String sessionId) {
+        // LLM 호출 전에 상담원 전환을 먼저 본다. 전환이면 모델을 부르지 않고 연결 안내를 바로 돌려준다.
+        HandoffResult handoff = handoffDetector.detect(req.message());
+        if (handoff.handoff()) {
+            log.info("[Handoff] trigger={} — LLM 호출 없음", handoff.trigger());
+            return handoff.message();
+        }
         return chatClient.prompt()
                 .user(req.message())
                 .advisors(a -> a.param(ChatMemory.CONVERSATION_ID, sessionId))
