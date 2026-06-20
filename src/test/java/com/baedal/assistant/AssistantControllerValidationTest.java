@@ -3,6 +3,7 @@ package com.baedal.assistant;
 import com.baedal.assistant.tool.OrderTools;
 import com.baedal.support.BaedalSupportApplication;
 import com.baedal.support.PerformanceLoggingAdvisor;
+import com.baedal.support.observability.AgentMetrics;
 import org.junit.jupiter.api.Test;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
@@ -55,6 +56,7 @@ class AssistantControllerValidationTest {
     @MockitoBean MessageChatMemoryAdvisor memoryAdvisor;
     @MockitoBean QuestionAnswerAdvisor ragAdvisor;
     @MockitoBean PerformanceLoggingAdvisor advisor;
+    @MockitoBean AgentMetrics metrics;
     @MockitoBean OrderTools orderTools;
 
     @Test

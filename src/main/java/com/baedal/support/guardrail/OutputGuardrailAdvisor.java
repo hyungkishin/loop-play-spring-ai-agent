@@ -1,5 +1,6 @@
 package com.baedal.support.guardrail;
 
+import com.baedal.support.observability.AgentMetrics;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClientRequest;
@@ -43,6 +44,7 @@ public class OutputGuardrailAdvisor implements CallAdvisor {
             "죄송합니다. 답변을 생성하지 못했습니다. 상담원 연결로 도와드리겠습니다.";
 
     private final SensitiveDataMasker masker;
+    private final AgentMetrics metrics;
 
     @Override
     public String getName() {
@@ -77,15 +79,18 @@ public class OutputGuardrailAdvisor implements CallAdvisor {
     /** 유출 마커 → 민감정보 마스킹 → 빈 응답 순으로 가공한다. */
     String transform(String text) {
         if (containsLeakMarker(text)) {
+            metrics.guardrailBlock("output", "PROMPT_LEAK");
             log.warn("[OutputGuardrail] PROMPT_LEAK 차단 — 시스템 프롬프트 마커 노출");
             return LEAK_FALLBACK;
         }
         String masked = text;
         if (masker.containsSensitive(text)) {
             masked = masker.mask(text);
+            metrics.guardrailBlock("output", "SENSITIVE_MASKED");
             log.info("[OutputGuardrail] SENSITIVE_MASKED — 민감 정보 마스킹 적용");
         }
         if (masked.isBlank()) {
+            metrics.guardrailBlock("output", "EMPTY_RESPONSE");
             log.warn("[OutputGuardrail] EMPTY_RESPONSE — 빈 응답 Fallback");
             return EMPTY_FALLBACK;
         }

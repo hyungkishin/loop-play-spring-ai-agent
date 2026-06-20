@@ -1,5 +1,7 @@
 package com.baedal.support.guardrail;
 
+import com.baedal.support.observability.AgentMetrics;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClientRequest;
 import org.springframework.ai.chat.client.ChatClientResponse;
@@ -27,7 +29,10 @@ import java.util.regex.Pattern;
  */
 @Slf4j
 @Component
+@RequiredArgsConstructor
 public class InputGuardrailAdvisor implements CallAdvisor {
+
+    private final AgentMetrics metrics;
 
     /**
      * 입력 최대 길이. 배달 상담 한 건의 발화는 길어야 수백 자라, 2000자면 상세한 불만 진술도 담긴다.
@@ -71,6 +76,7 @@ public class InputGuardrailAdvisor implements CallAdvisor {
         String input = extractUserText(request);
         Decision decision = check(input);
         if (decision.blocked()) {
+            metrics.guardrailBlock("input", decision.reason());
             log.warn("[InputGuardrail] 차단 — reason={} inputLen={}",
                     decision.reason(), input == null ? 0 : input.length());
             return shortCircuit(request, decision.fallbackMessage());

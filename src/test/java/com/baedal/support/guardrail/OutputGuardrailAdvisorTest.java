@@ -1,5 +1,7 @@
 package com.baedal.support.guardrail;
 
+import com.baedal.support.observability.AgentMetrics;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -7,7 +9,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class OutputGuardrailAdvisorTest {
 
-    private final OutputGuardrailAdvisor advisor = new OutputGuardrailAdvisor(new SensitiveDataMasker());
+    private final OutputGuardrailAdvisor advisor = new OutputGuardrailAdvisor(
+            new SensitiveDataMasker(), new AgentMetrics(new SimpleMeterRegistry()));
 
     @Test
     @DisplayName("시스템 프롬프트 마커가 새면 LEAK_FALLBACK으로 전체 치환한다")
