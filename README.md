@@ -66,18 +66,21 @@ Round 6에서는 새 AI 기능보다 운영에 필요한 관찰/방어/복구 �
 - `OllamaHealthIndicator`: `/actuator/health`에 `ollama` 컴포넌트 노출
 - `SimpleRateLimitFilter`: `/api/` 요청 기준 IP별 60초 30건 제한, 31번째 429
 - `server.shutdown=graceful`, `spring.lifecycle.timeout-per-shutdown-phase=30s`
+- (재관찰 후 추가) `TurnTraceAdvisor`: 턴마다 Memory 메시지 수와 RAG 검색 문서를 한 줄로 기록
+- (재관찰 후 추가) `FailSoftVectorStore` + Hikari `connection-timeout: 2000`: PgVector 장애 시 RAG만 빠지고 Tool·Memory는 계속 동작
+- (재관찰 후 수정) 토큰 메트릭 이중 집계 제거, Tool View 시각을 `KoreanTime` 문자열로, RAG threshold 0.5 → 0.42, 지시어 규칙 프롬프트 수정
 
 설계와 실측 기록은 [docs/6주차/00.운영가능한에이전트로묶기.md](docs/6주차/00.운영가능한에이전트로묶기.md)에 정리했습니다.
 
 ### 설계 결정
 
-Advisor 체인은 `5 → 10 → 20 → 50 → 100` 순서로 둡니다.
+Advisor 체인은 `5 → 10 → 20 → 30 → 50 → 100` 순서로 둡니다. (30 `TurnTraceAdvisor`는 재관찰 때 추가한 관측용)
 
 `5 InputGuardrailAdvisor`는 Memory보다 앞에서 공격 입력을 잘라 Memory 오염과 LLM 비용을 막습니다.
 
-`10 MessageChatMemoryAdvisor`는 RAG보다 앞에서 "그 주문" 같은 지시어를 먼저 풀어 줍니다.
+`10 MessageChatMemoryAdvisor`는 RAG보다 앞에 둡니다. 순서를 뒤집으면 RAG가 만든 증강 프롬프트가 Memory에 저장되는 오염을 4주차에 봤습니다. (처음엔 "지시어를 먼저 풀어 준다"고 적었는데, RAG 검색어는 이번 턴 사용자 문장뿐이라 사실이 아니었습니다. `docs/4주차/06`)
 
-`20 QuestionAnswerAdvisor`는 Memory 뒤에서 정책 Context를 붙입니다.
+`20 QuestionAnswerAdvisor`는 Memory 뒤에서 정책 Context를 붙입니다. 검색 실패는 `FailSoftVectorStore`가 "Context 없음"으로 바꿉니다.
 
 `50 OutputGuardrailAdvisor`는 모델 응답 뒤에서 프롬프트 유출과 민감 정보를 막습니다.
 
@@ -90,6 +93,8 @@ Tool은 예외보다 null/결과 객체를 우선합니다. `NOT_CANCELABLE`, `A
 Memory + RAG + Guardrail은 같은 Advisor 체인에 둡니다. 별도 파이프라인으로 흩어지면 어느 데이터가 언제 Memory에 저장되고 언제 검색 Context로만 쓰이는지 추적하기 어렵습니다.
 
 ### 10턴 E2E 관찰
+
+> 아래는 qwen2.5 제출 당시 기록입니다. gemma4로 바꾼 뒤 턴별 로그와 함께 다시 돌린 15턴 기록은 [docs/6주차/01](docs/6주차/01.gemma4전환과E2E재관찰.md)에 있습니다.
 
 `X-Session-Id: final-demo-1717`로 10턴을 실행했습니다.
 
@@ -171,6 +176,7 @@ Ollama DOWN, PgVector DOWN은 재현 명령과 단위 테스트는 준비했지�
 - [05.스트리밍구현.md](docs/1주차/05.스트리밍구현.md) — `Flux<String>` + SSE 직렬화 (3단계)
 - [06.advisor와로깅.md](docs/1주차/06.advisor와로깅.md) — `CallAdvisor` + Usage 메타데이터 (4단계)
 - [07.실측결과.md](docs/1주차/07.실측결과.md) — Ollama qwen2.5 로 두드린 전후 데이터
+- [08.컴포넌트역할정리.md](docs/1주차/08.컴포넌트역할정리.md) — ChatClient / ChatModel / Advisor / Tool / VectorStore를 6주차 로그로 다시 설명
 
 ## 2주차 회고 인덱스 — Tool Calling / 멱등성 / description / Observability
 
@@ -204,6 +210,7 @@ curl 기반 실측과 JDBC 저장소 비교는 이어서 기록합니다.
 - [03.MemoryRAG협업과Advisor순서.md](docs/4주차/03.MemoryRAG협업과Advisor순서.md)
 - [04.Observability와AI코드리뷰.md](docs/4주차/04.Observability와AI코드리뷰.md)
 - [05.회고.md](docs/4주차/05.회고.md)
+- [06.RAG필요성과키워드검색비교.md](docs/4주차/06.RAG필요성과키워드검색비교.md) — RAG 유무 비교, 키워드 vs 임베딩, threshold 재조정 (gemma4)
 
 ## 5주차 회고 인덱스 — Guardrail / Handoff / Fallback
 
@@ -213,15 +220,23 @@ curl 기반 실측과 JDBC 저장소 비교는 이어서 기록합니다.
 - [03.Handoff와상담원전환.md](docs/5주차/03.Handoff와상담원전환.md)
 - [04.Fallback과AI코드리뷰.md](docs/5주차/04.Fallback과AI코드리뷰.md)
 - [05.회고.md](docs/5주차/05.회고.md)
+- [06.확률적특성과Guardrail근거.md](docs/5주차/06.확률적특성과Guardrail근거.md) — 같은 입력 10회 반복, 오전/오후 사실 오류와 View 수정 (gemma4)
 
-## 6주차 회고 인덱스 — Observability / Health / Rate Limit
+## 6주차 회고 인덱스 — Observability / Health / Rate Limit / gemma4 재관찰
 
 - [00.운영가능한에이전트로묶기.md](docs/6주차/00.운영가능한에이전트로묶기.md)
-- [실측 raw](docs/6주차/실측-raw/round6-smoke.md)
+- [01.gemma4전환과E2E재관찰.md](docs/6주차/01.gemma4전환과E2E재관찰.md) — 모델 교체, 턴별 컴포넌트 기여 로그, 장애 주입
+- [02.리뷰받는관점과리뷰하는관점.md](docs/6주차/02.리뷰받는관점과리뷰하는관점.md) — 프로덕션 기준 개선 사항
+- 실측 raw: [round6-smoke](docs/6주차/실측-raw/round6-smoke.md), [gemma4 E2E 수정 전](docs/6주차/실측-raw/gemma4-e2e-14턴-수정전.md), [수정 후](docs/6주차/실측-raw/gemma4-e2e-15턴-수정후.md), [장애 주입](docs/6주차/실측-raw/gemma4-장애주입.md), [threshold 점수](docs/6주차/실측-raw/rag-threshold-점수분포.md), [재현 스크립트](docs/6주차/실측-raw/scripts/)
 
 ## 실측 환경
 
 회고의 "실측해보고 적어두는 부록" 들은 다음 환경에서 직접 두드린 데이터예요.
+1~6주차 본 기록은 `qwen2.5` 로 잰 값이고, 현재 기본 채팅 모델은 `gemma4` 입니다. 파일명이나 제목에 gemma4 가 붙은 보강 문서(1주차 08, 4주차 06, 5주차 06, 6주차 01·02)만 gemma4 로 잰 값이에요. 앞의 수치가 gemma4 에서 재현된다고 보장하지 않습니다.
+
+gemma4 재관찰 환경: Ollama 0.33.2, `gemma4:latest`(8.0B, Q4_K_M) + `qwen3-embedding:0.6b`, PgVector `pgvector/pgvector:pg16`, JDK 21, 포트 18080. raw 와 재현 스크립트는 저장소 안 `docs/6주차/실측-raw/` 에 있습니다.
+
+qwen2.5 기록 당시 환경:
 
 - Ollama `qwen2.5:latest` (4.7GB)
 - `application.yml`: `temperature: 0.3`, `base-url: http://localhost:11434`

@@ -17,8 +17,9 @@ import org.springframework.context.annotation.Configuration;
  *   QuestionAnswerAdvisor      (order=20)   — Round 4: RAG 검색 결과 주입
  *   PerformanceLoggingAdvisor  (order=100)  — Round 1: 최종 호출 시간 집계
  * </pre>
- * Memory가 먼저 "아까 그 주문"의 orderId를 복원해야 RAG가 "그 주문의 환불 정책"을
- * 검색할 수 있다. 순서를 바꾸면 어떤 품질 저하가 생기는지는 숙제 3단계에서 관찰한다.
+ * QuestionAnswerAdvisor의 검색어는 이번 턴 사용자 문장({@code prompt.getUserMessage()})뿐이라,
+ * Memory가 앞에 있어도 "그 주문" 같은 지시어가 검색어에서 풀리지는 않는다(docs/4주차/06).
+ * Memory를 앞에 두는 이유는 RAG가 만든 증강 프롬프트가 Memory에 저장되는 오염을 막기 위해서다(docs/4주차/03).
  *
  * @see KnowledgeLoader FAQ/정책 문서를 VectorStore에 적재하는 ApplicationRunner
  */
