@@ -19,7 +19,8 @@ class AgentMetricsTest {
         metrics.guardrailBlock("input", "PROMPT_INJECTION");
         metrics.handoff("HIGH_EMOTION");
         metrics.toolInvoke("getOrderDetail", "success");
-        metrics.tokens("total", 42);
+        metrics.tokens("prompt", 40);
+        metrics.tokens("completion", 2);
 
         assertThat(counter("baedal.agent.request.total")).isEqualTo(1.0);
         assertThat(counter("baedal.agent.fallback")).isEqualTo(1.0);
@@ -28,7 +29,10 @@ class AgentMetricsTest {
         assertThat(counter("baedal.agent.handoff", "reason", "HIGH_EMOTION")).isEqualTo(1.0);
         assertThat(counter("baedal.agent.tool.invoke", "tool", "getOrderDetail", "outcome", "success"))
                 .isEqualTo(1.0);
-        assertThat(counter("baedal.agent.tokens", "type", "total")).isEqualTo(42.0);
+        assertThat(counter("baedal.agent.tokens", "type", "prompt")).isEqualTo(40.0);
+        // 태그 없이 합산해도 실제 사용량(prompt + completion)과 같아야 한다.
+        assertThat(registry.get("baedal.agent.tokens").counters().stream()
+                .mapToDouble(c -> c.count()).sum()).isEqualTo(42.0);
     }
 
     @Test

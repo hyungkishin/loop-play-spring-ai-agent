@@ -67,9 +67,10 @@ public class PerformanceLoggingAdvisor implements CallAdvisor {
         log.info("LLM call elapsedMs={} promptTokens={} completionTokens={} totalTokens={}",
                 elapsedMs, promptTokens, completionTokens, totalTokens);
         metrics.llmLatency(java.time.Duration.ofMillis(elapsedMs));
+        // total은 기록하지 않는다. 같은 이름에 prompt/completion/total을 다 올리면
+        // 태그 없이 조회했을 때 실제 사용량의 2배가 나온다(docs/6주차/01). total = sum by(type).
         metrics.tokens("prompt", promptTokens);
         metrics.tokens("completion", completionTokens);
-        metrics.tokens("total", totalTokens);
     }
 
     private void logFailure(long elapsedMs, RuntimeException e) {
