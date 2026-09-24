@@ -6,11 +6,11 @@ Week 1 부터 단계마다 코드 / 테스트 / 회고 docs 를 같이 묶고 �
 
 ## 빠른 시작
 
-Ollama 와 채팅 모델 `gemma4`, 임베딩 모델 `qwen3-embedding:0.6b` 가 필요합니다.
+Ollama 와 채팅 모델 `gemma4`, 임베딩 모델 `embeddinggemma` 가 필요합니다. 모델은 전부 Gemma 계열입니다.
 
 ```bash
 ollama pull gemma4
-ollama pull qwen3-embedding:0.6b
+ollama pull embeddinggemma
 docker compose up -d
 # Gradle 8 계열이라 JDK 25에서는 빌드 스크립트가 안 돕니다. 17 또는 21로 실행하세요.
 export JAVA_HOME=$(/usr/libexec/java_home -v 21)
@@ -68,7 +68,8 @@ Round 6에서는 새 AI 기능보다 운영에 필요한 관찰/방어/복구 �
 - `server.shutdown=graceful`, `spring.lifecycle.timeout-per-shutdown-phase=30s`
 - (재관찰 후 추가) `TurnTraceAdvisor`: 턴마다 Memory 메시지 수와 RAG 검색 문서를 한 줄로 기록
 - (재관찰 후 추가) `FailSoftVectorStore` + Hikari `connection-timeout: 2000`: PgVector 장애 시 RAG만 빠지고 Tool·Memory는 계속 동작
-- (재관찰 후 수정) 토큰 메트릭 이중 집계 제거, Tool View 시각을 `KoreanTime` 문자열로, RAG threshold 0.5 → 0.42, 지시어 규칙 프롬프트 수정
+- (재관찰 후 수정) 토큰 메트릭 이중 집계 제거, Tool View 시각을 `KoreanTime` 문자열로, 지시어 규칙 프롬프트 수정
+- (재관찰 후 수정) 임베딩을 `qwen3-embedding:0.6b`(1024차원)에서 `embeddinggemma`(768차원)로 교체. RAG threshold는 qwen 때 0.42로 내렸다가 gemma 임베딩 기준으로 다시 재서 0.5
 
 설계와 실측 기록은 [docs/6주차/00.운영가능한에이전트로묶기.md](docs/6주차/00.운영가능한에이전트로묶기.md)에 정리했습니다.
 
@@ -227,14 +228,15 @@ curl 기반 실측과 JDBC 저장소 비교는 이어서 기록합니다.
 - [00.운영가능한에이전트로묶기.md](docs/6주차/00.운영가능한에이전트로묶기.md)
 - [01.gemma4전환과E2E재관찰.md](docs/6주차/01.gemma4전환과E2E재관찰.md) — 모델 교체, 턴별 컴포넌트 기여 로그, 장애 주입
 - [02.리뷰받는관점과리뷰하는관점.md](docs/6주차/02.리뷰받는관점과리뷰하는관점.md) — 프로덕션 기준 개선 사항
-- 실측 raw: [round6-smoke](docs/6주차/실측-raw/round6-smoke.md), [gemma4 E2E 수정 전](docs/6주차/실측-raw/gemma4-e2e-14턴-수정전.md), [수정 후](docs/6주차/실측-raw/gemma4-e2e-15턴-수정후.md), [장애 주입](docs/6주차/실측-raw/gemma4-장애주입.md), [threshold 점수](docs/6주차/실측-raw/rag-threshold-점수분포.md), [재현 스크립트](docs/6주차/실측-raw/scripts/)
+- [03.임베딩까지Gemma로.md](docs/6주차/03.임베딩까지Gemma로.md) — 임베딩 교체, 재적재, threshold 재측정
+- 실측 raw: [round6-smoke](docs/6주차/실측-raw/round6-smoke.md), [gemma4 E2E 수정 전](docs/6주차/실측-raw/gemma4-e2e-14턴-수정전.md), [수정 후](docs/6주차/실측-raw/gemma4-e2e-15턴-수정후.md), [장애 주입](docs/6주차/실측-raw/gemma4-장애주입.md), [threshold 점수(qwen 임베딩)](docs/6주차/실측-raw/rag-threshold-점수분포.md), [embeddinggemma 재측정](docs/6주차/실측-raw/embeddinggemma-재측정.md), [재현 스크립트](docs/6주차/실측-raw/scripts/)
 
 ## 실측 환경
 
 회고의 "실측해보고 적어두는 부록" 들은 다음 환경에서 직접 두드린 데이터예요.
-1~6주차 본 기록은 `qwen2.5` 로 잰 값이고, 현재 기본 채팅 모델은 `gemma4` 입니다. 파일명이나 제목에 gemma4 가 붙은 보강 문서(1주차 08, 4주차 06, 5주차 06, 6주차 01·02)만 gemma4 로 잰 값이에요. 앞의 수치가 gemma4 에서 재현된다고 보장하지 않습니다.
+1~6주차 본 기록은 `qwen2.5` 로 잰 값이고, 현재 기본 채팅 모델은 `gemma4` 입니다. 파일명이나 제목에 gemma4 가 붙은 보강 문서(1주차 08, 4주차 06, 5주차 06, 6주차 01·02·03)만 gemma4 로 잰 값이에요. 앞의 수치가 gemma4 에서 재현된다고 보장하지 않습니다.
 
-gemma4 재관찰 환경: Ollama 0.33.2, `gemma4:latest`(8.0B, Q4_K_M) + `qwen3-embedding:0.6b`, PgVector `pgvector/pgvector:pg16`, JDK 21, 포트 18080. raw 와 재현 스크립트는 저장소 안 `docs/6주차/실측-raw/` 에 있습니다.
+gemma4 재관찰 환경: Ollama 0.33.2, `gemma4:latest`(8.0B, Q4_K_M) + 임베딩 `qwen3-embedding:0.6b`(6주차 03 이후 `embeddinggemma`), PgVector `pgvector/pgvector:pg16`, JDK 21, 포트 18080. raw 와 재현 스크립트는 저장소 안 `docs/6주차/실측-raw/` 에 있습니다.
 
 qwen2.5 기록 당시 환경:
 
