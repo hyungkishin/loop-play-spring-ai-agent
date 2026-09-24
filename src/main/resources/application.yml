@@ -22,6 +22,10 @@ spring:
     username: baedal
     password: baedal
     driver-class-name: org.postgresql.Driver
+    # Round 6 — 기본값(30s)이면 PgVector가 죽었을 때 요청마다 30초를 기다린 뒤 실패한다.
+    # 검색은 fail-soft로 넘기므로 빨리 포기하는 편이 낫다. (관찰은 docs/6주차/01)
+    hikari:
+      connection-timeout: 2000
 
   ai:
     ollama:

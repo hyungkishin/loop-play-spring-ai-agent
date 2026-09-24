@@ -1,5 +1,6 @@
 package com.baedal.support.rag;
 
+import com.baedal.support.observability.AgentMetrics;
 import org.springframework.ai.chat.client.advisor.vectorstore.QuestionAnswerAdvisor;
 import org.springframework.ai.transformer.splitter.TokenTextSplitter;
 import org.springframework.ai.vectorstore.SearchRequest;
@@ -58,15 +59,16 @@ public class RagConfig {
     /**
      * 사용자 질문을 자동으로 벡터화 → VectorStore 검색 → Top-K 결과를 프롬프트에 주입하는 Advisor.
      * order(20)으로 Memory(10) 뒤, Performance(100) 앞에 놓는다.
+     * 검색 저장소 장애가 전체 응답 실패로 번지지 않게 {@link FailSoftVectorStore}로 감싼다.
      */
     @Bean
-    public QuestionAnswerAdvisor questionAnswerAdvisor(VectorStore vectorStore) {
+    public QuestionAnswerAdvisor questionAnswerAdvisor(VectorStore vectorStore, AgentMetrics metrics) {
         SearchRequest searchRequest = SearchRequest.builder()
                 .topK(TOP_K)
                 .similarityThreshold(SIMILARITY_THRESHOLD)
                 .build();
 
-        return QuestionAnswerAdvisor.builder(vectorStore)
+        return QuestionAnswerAdvisor.builder(new FailSoftVectorStore(vectorStore, metrics))
                 .searchRequest(searchRequest)
                 .order(20)
                 .build();

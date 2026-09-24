@@ -21,6 +21,7 @@ class AgentMetricsTest {
         metrics.toolInvoke("getOrderDetail", "success");
         metrics.tokens("prompt", 40);
         metrics.tokens("completion", 2);
+        metrics.ragFailure();
 
         assertThat(counter("baedal.agent.request.total")).isEqualTo(1.0);
         assertThat(counter("baedal.agent.fallback")).isEqualTo(1.0);
@@ -33,6 +34,7 @@ class AgentMetricsTest {
         // 태그 없이 합산해도 실제 사용량(prompt + completion)과 같아야 한다.
         assertThat(registry.get("baedal.agent.tokens").counters().stream()
                 .mapToDouble(c -> c.count()).sum()).isEqualTo(42.0);
+        assertThat(counter("baedal.agent.rag.failure")).isEqualTo(1.0);
     }
 
     @Test

@@ -66,6 +66,13 @@ public class AgentMetrics {
                 .increment();
     }
 
+    public void ragFailure() {
+        Counter.builder("baedal.agent.rag.failure")
+                .description("Vector searches that failed and continued without context")
+                .register(registry)
+                .increment();
+    }
+
     public void tokens(String type, Integer count) {
         if (count == null || count <= 0) {
             return;
