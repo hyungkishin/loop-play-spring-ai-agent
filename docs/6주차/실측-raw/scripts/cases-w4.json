@@ -1,0 +1,8 @@
+[
+ {"id":"w4-noRAG-delay","endpoint":"/api/v1/chat","message":"배달앱에서 배달이 예상 시간보다 20분 늦었어요. 보상 받을 수 있나요? 기준을 구체적으로 알려주세요.","n":3,"markers":["1,000원","11~29분"]},
+ {"id":"w4-RAG-delay","endpoint":"/api/v1/assistant","message":"배달앱에서 배달이 예상 시간보다 20분 늦었어요. 보상 받을 수 있나요? 기준을 구체적으로 알려주세요.","n":3,"markers":["1,000원","11~29분"]},
+ {"id":"w4-noRAG-refund","endpoint":"/api/v1/chat","message":"배달 받은 음식에 문제가 있으면 언제까지 환불 요청해야 하나요?","n":3,"markers":["24시간"]},
+ {"id":"w4-RAG-refund","endpoint":"/api/v1/assistant","message":"배달 받은 음식에 문제가 있으면 언제까지 환불 요청해야 하나요?","n":3,"markers":["24시간"]},
+ {"id":"w4-noRAG-coupon","endpoint":"/api/v1/chat","message":"주문을 취소하면 사용했던 쿠폰은 어떻게 되나요?","n":3,"markers":["복원","1시간"]},
+ {"id":"w4-RAG-coupon","endpoint":"/api/v1/assistant","message":"주문을 취소하면 사용했던 쿠폰은 어떻게 되나요?","n":3,"markers":["복원","1시간"]}
+]
