@@ -36,21 +36,22 @@ spring:
         model: gemma4
         options:
           temperature: 0.3
-      # 임베딩 모델을 Ollama로 통일한다. 사용 전: ollama pull qwen3-embedding:0.6b
+      # 임베딩도 Gemma 계열로 맞춘다. 사용 전: ollama pull embeddinggemma
+      # qwen3-embedding:0.6b(1024차원)에서 바꾸면 vector_store 테이블을 지우고 다시 적재해야 한다.
       embedding:
-        model: qwen3-embedding:0.6b
+        model: embeddinggemma
 
     # -------------------------------------------------------------------
     # Round 4 — PgVector 설정
     #   initialize-schema=true → 기동 시 vector_store 테이블/확장 자동 생성
-    #   dimensions는 임베딩 모델 차원과 반드시 일치 (qwen3-embedding:0.6b → 1024)
+    #   dimensions는 임베딩 모델 차원과 반드시 일치 (embeddinggemma → 768)
     # -------------------------------------------------------------------
     vectorstore:
       pgvector:
         initialize-schema: true
         index-type: HNSW
         distance-type: COSINE_DISTANCE
-        dimensions: 1024
+        dimensions: 768
 
 logging:
   level:

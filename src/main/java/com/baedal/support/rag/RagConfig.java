@@ -35,12 +35,12 @@ public class RagConfig {
 
     /**
      * COSINE_SIMILARITY 기준. 이 값 미만은 "관련 없음"으로 버린다.
-     * 처음엔 0.5로 뒀는데, "비 오는 날 늦게 오면 보상 받나요?"가 delay-compensation 0.456 /
-     * weather-delay 0.426으로 전부 탈락했다. 같은 표본에서 도메인 밖 질문("치킨 맛집 추천해줘",
-     * "오늘 날씨 어때요?", 인사, 주문 상태 문의)의 최고점은 0.389였다. 그래서 둘 사이인 0.42로 내렸다.
-     * 표본이 20문장 남짓이고 간격이 좁아서(0.389 vs 0.426), 문서가 늘면 다시 재야 한다. raw는 docs/6주차/실측-raw.
+     * embeddinggemma(768차원) 기준으로 23문장을 재 보니, 잡혀야 할 정책 질문의 top-1 최저점은 0.525(쿠폰),
+     * 정책이 아닌 질문(인사·주문 상태·사장님 번호·날씨·맛집)의 최고점은 0.447이었다. 그 사이인 0.5로 둔다.
+     * qwen3-embedding:0.6b 때는 0.42였다(도메인 밖 0.389 vs 놓친 정책 질문 0.426). 임베딩 모델을 바꾸면 이 값도 다시 재야 한다.
+     * raw는 docs/6주차/실측-raw/rag-threshold-점수분포.md.
      */
-    static final double SIMILARITY_THRESHOLD = 0.42;
+    static final double SIMILARITY_THRESHOLD = 0.5;
 
     /**
      * 문서를 토큰 단위 청크로 쪼개는 Splitter.
