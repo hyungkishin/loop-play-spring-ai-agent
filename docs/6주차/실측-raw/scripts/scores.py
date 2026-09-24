@@ -1,6 +1,6 @@
-import json, subprocess, sys, urllib.request
+import json, os, subprocess, sys, urllib.request
 def embed(t):
-    r = urllib.request.Request("http://localhost:11434/api/embed", data=json.dumps({"model":"qwen3-embedding:0.6b","input":t}).encode(), headers={"Content-Type":"application/json"})
+    r = urllib.request.Request("http://localhost:11434/api/embed", data=json.dumps({"model":os.environ.get("EMBED_MODEL","embeddinggemma"),"input":t}).encode(), headers={"Content-Type":"application/json"})
     return json.load(urllib.request.urlopen(r))["embeddings"][0]
 for q in sys.argv[1:]:
     v = "[" + ",".join(map(str, embed(q))) + "]"

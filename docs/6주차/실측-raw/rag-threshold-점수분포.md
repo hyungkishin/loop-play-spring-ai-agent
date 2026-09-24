@@ -2,7 +2,7 @@
 
 질문을 `qwen3-embedding:0.6b`로 임베딩해 `vector_store` 7개 청크와 코사인 유사도(`1 - (embedding <=> q)`)를 직접 계산했다. Spring AI `QuestionAnswerAdvisor`가 쓰는 것과 같은 테이블, 같은 임베딩 모델이다.
 
-재현: `python3 scripts/scores.py "질문1" "질문2" ...`
+재현: `EMBED_MODEL=qwen3-embedding:0.6b python3 scripts/scores.py "질문1" "질문2" ...`
 
 ```text
 Q: 비 오는 날 늦게 오면 보상 받나요?

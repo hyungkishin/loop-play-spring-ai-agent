@@ -1,5 +1,5 @@
 # 같은 PgVector 테이블 위에서 (1) 임베딩 코사인 검색 (2) 단순 키워드 겹침 검색의 top-1 문서를 비교한다.
-import json, subprocess, urllib.request
+import json, os, subprocess, urllib.request
 Q = [
  ("음식 받았는데 상했어요, 돈 돌려받을 수 있나요?", "refund-after-delivered"),
  ("라이더가 한참 안 와요. 뭐 해주는 거 있어요?", "delay-compensation"),
@@ -16,7 +16,7 @@ def psql(sql):
     return subprocess.run(["docker","exec","-i","baedal-pgvector","psql","-U","baedal","-d","baedal","-At","-F","\t","-c",sql],
                           capture_output=True, text=True, check=True).stdout
 def embed(t):
-    req = urllib.request.Request("http://localhost:11434/api/embed", data=json.dumps({"model":"qwen3-embedding:0.6b","input":t}).encode(),
+    req = urllib.request.Request("http://localhost:11434/api/embed", data=json.dumps({"model":os.environ.get("EMBED_MODEL","embeddinggemma"),"input":t}).encode(),
                                  headers={"Content-Type":"application/json"})
     return json.load(urllib.request.urlopen(req))["embeddings"][0]
 rows = [l.split("\t",1) for l in psql("select metadata->>'faqId', replace(replace(content, E'\\n',' '), E'\\t',' ') from vector_store").splitlines()]

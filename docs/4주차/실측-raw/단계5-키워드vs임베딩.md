@@ -6,7 +6,7 @@
 - 키워드: 질문을 공백으로 자르고 문장부호를 뗀 2글자 이상 토큰이, 문서 본문에 부분 문자열로 몇 개 들어 있는지 세서 1위 문서. 형태소 분석/BM25 없음
 - `kw_ok`는 1위가 정답 하나로 좁혀졌을 때만 true, `kw_gold_in_top`은 동점 1위 안에 정답이 있으면 true
 
-재현: `python3 docs/6주차/실측-raw/scripts/kw_vs_emb.py`
+재현: `EMBED_MODEL=qwen3-embedding:0.6b python3 docs/6주차/실측-raw/scripts/kw_vs_emb.py` (당시 vector_store도 qwen 임베딩 1024차원). embeddinggemma 결과는 `docs/6주차/실측-raw/embeddinggemma-재측정.md`
 
 ```text
 chunks=7 docs=7
