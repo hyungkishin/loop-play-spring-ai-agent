@@ -33,11 +33,12 @@ public class RagConfig {
 
     /**
      * COSINE_SIMILARITY 기준. 이 값 미만은 "관련 없음"으로 버린다.
-     * 0.5는 대략 "주제가 같은 정도"이며 qwen3-embedding:0.6b 기준 출발점이다.
-     * 너무 낮으면 도메인 밖 질문에도 무관 정책이 Top-K에 끼고, 너무 높으면 정답 문서도 탈락한다.
-     * 경계 탐색은 숙제 3단계 실험으로 남긴다.
+     * 처음엔 0.5로 뒀는데, "비 오는 날 늦게 오면 보상 받나요?"가 delay-compensation 0.456 /
+     * weather-delay 0.426으로 전부 탈락했다. 같은 표본에서 도메인 밖 질문("치킨 맛집 추천해줘",
+     * "오늘 날씨 어때요?", 인사, 주문 상태 문의)의 최고점은 0.389였다. 그래서 둘 사이인 0.42로 내렸다.
+     * 표본이 20문장 남짓이고 간격이 좁아서(0.389 vs 0.426), 문서가 늘면 다시 재야 한다. raw는 docs/6주차/실측-raw.
      */
-    private static final double SIMILARITY_THRESHOLD = 0.5;
+    static final double SIMILARITY_THRESHOLD = 0.42;
 
     /**
      * 문서를 토큰 단위 청크로 쪼개는 Splitter.
