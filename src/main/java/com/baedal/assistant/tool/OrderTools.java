@@ -6,6 +6,7 @@ import com.baedal.assistant.service.OrderMockService;
 import com.baedal.assistant.tool.view.CancelOrderResult;
 import com.baedal.assistant.tool.view.CancelOrderResult.Outcome;
 import com.baedal.assistant.tool.view.DeliveryStatusView;
+import com.baedal.assistant.tool.view.KoreanTime;
 import com.baedal.assistant.tool.view.OrderDetailView;
 import com.baedal.support.observability.AgentMetrics;
 import lombok.RequiredArgsConstructor;
@@ -126,8 +127,8 @@ public class OrderTools {
                         .toList(),
                 order.totalAmount(),
                 order.status().name(),
-                order.orderedAt(),
-                order.estimatedDeliveryAt()
+                KoreanTime.format(order.orderedAt()),
+                KoreanTime.format(order.estimatedDeliveryAt())
         );
     }
 
@@ -138,7 +139,7 @@ public class OrderTools {
                 order.orderId(),
                 order.status().name(),
                 rider,
-                order.estimatedDeliveryAt()
+                KoreanTime.format(order.estimatedDeliveryAt())
         );
     }
 
