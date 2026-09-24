@@ -8,6 +8,7 @@ import com.baedal.support.guardrail.HandoffDetector.HandoffResult;
 import com.baedal.support.guardrail.InputGuardrailAdvisor;
 import com.baedal.support.guardrail.OutputGuardrailAdvisor;
 import com.baedal.support.observability.AgentMetrics;
+import com.baedal.support.observability.TurnTraceAdvisor;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
@@ -34,6 +35,7 @@ public class AssistantController {
                                MessageChatMemoryAdvisor memoryAdvisor,
                                QuestionAnswerAdvisor ragAdvisor,
                                OutputGuardrailAdvisor outputGuardrail,
+                               TurnTraceAdvisor turnTraceAdvisor,
                                PerformanceLoggingAdvisor performanceAdvisor,
                                HandoffDetector handoffDetector,
                                AgentMetrics metrics,
@@ -46,7 +48,8 @@ public class AssistantController {
                 // 입력 Guardrail은 가장 바깥(5)에서 차단 발화가 Memory에 저장되기 전에 잘라내고,
                 // 출력 Guardrail(50)은 모델 응답을 받은 뒤 마스킹하되 performance(100)보다는 바깥에 둬
                 // performance가 마스킹 전 날 응답의 토큰을 재게 한다.
-                .defaultAdvisors(inputGuardrail, memoryAdvisor, ragAdvisor, outputGuardrail, performanceAdvisor)
+                // Round 6: turnTrace(30)는 Memory·RAG가 붙인 결과를 턴마다 한 줄로 남긴다.
+                .defaultAdvisors(inputGuardrail, memoryAdvisor, ragAdvisor, turnTraceAdvisor, outputGuardrail, performanceAdvisor)
                 .defaultTools(orderTools)
                 .build();
     }

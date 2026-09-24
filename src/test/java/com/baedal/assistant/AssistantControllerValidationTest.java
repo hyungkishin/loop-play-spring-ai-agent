@@ -57,6 +57,7 @@ class AssistantControllerValidationTest {
     @MockitoBean QuestionAnswerAdvisor ragAdvisor;
     @MockitoBean PerformanceLoggingAdvisor advisor;
     @MockitoBean AgentMetrics metrics;
+    @MockitoBean com.baedal.support.observability.TurnTraceAdvisor turnTraceAdvisor;
     @MockitoBean OrderTools orderTools;
 
     @Test
