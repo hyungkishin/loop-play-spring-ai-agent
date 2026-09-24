@@ -6,10 +6,14 @@ Week 1 부터 단계마다 코드 / 테스트 / 회고 docs 를 같이 묶고 �
 
 ## 빠른 시작
 
-Ollama 와 `qwen2.5` 모델이 필요합니다.
+Ollama 와 채팅 모델 `gemma4`, 임베딩 모델 `qwen3-embedding:0.6b` 가 필요합니다.
 
 ```bash
-ollama pull qwen2.5
+ollama pull gemma4
+ollama pull qwen3-embedding:0.6b
+docker compose up -d
+# Gradle 8 계열이라 JDK 25에서는 빌드 스크립트가 안 돕니다. 17 또는 21로 실행하세요.
+export JAVA_HOME=$(/usr/libexec/java_home -v 21)
 ./gradlew bootRun
 ```
 

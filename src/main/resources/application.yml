@@ -27,7 +27,9 @@ spring:
     ollama:
       base-url: http://localhost:11434
       chat:
-        model: qwen2.5
+        # Tool Calling이 필요하므로 tools capability가 있는 gemma4를 쓴다 (gemma3는 Ollama에서 tools 미지원).
+        # 사용 전: ollama pull gemma4
+        model: gemma4
         options:
           temperature: 0.3
       # 임베딩 모델을 Ollama로 통일한다. 사용 전: ollama pull qwen3-embedding:0.6b
